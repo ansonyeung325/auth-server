@@ -53,7 +53,6 @@ public class JwtUtil {
                 .before(new Date());
     }
 
-
     public JwtScope getAuthScope(String token) {
         String scope = Jwts.parser()
                 .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))

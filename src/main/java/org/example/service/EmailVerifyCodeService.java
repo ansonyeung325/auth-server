@@ -17,9 +17,9 @@ public class EmailVerifyCodeService {
     @Autowired
     private EmailVerifyCodeRepository emailVerifyCodeRepository;
 
-    public void createEmailVerifyCode(UUID userId, String code) {
+    public void createEmailVerifyCode(String username, String code) {
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(10);
-        EmailVerifyCode newEmailVerifyCode = new EmailVerifyCode(userId, code, expiredAt);
+        EmailVerifyCode newEmailVerifyCode = new EmailVerifyCode(username, code, expiredAt);
         try {
             emailVerifyCodeRepository.save(newEmailVerifyCode);
         } catch (DataIntegrityViolationException e) {
@@ -31,8 +31,8 @@ public class EmailVerifyCodeService {
         }
     }
 
-    public Optional<EmailVerifyCode> getVerifyCode(UUID userId, String code) {
+    public Optional<EmailVerifyCode> getVerifyCode(String username, String code) {
         LocalDateTime now = LocalDateTime.now();
-        return emailVerifyCodeRepository.findByUserIdAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(userId, code, now);
+        return emailVerifyCodeRepository.findByUsernameAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(username, code, now);
     }
 }

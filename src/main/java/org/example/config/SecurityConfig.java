@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**", "api/**")
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/h2-console/**", "/api/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

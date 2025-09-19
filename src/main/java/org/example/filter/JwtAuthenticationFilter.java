@@ -1,10 +1,13 @@
 package org.example.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.enums.AuthError;
 import org.example.enums.JwtScope;
+import org.example.model.ErrorResponse;
 import org.example.utils.JwtUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,6 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
@@ -40,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
+        String emailApiPath = "/api/auth/email";
         String username = null;
         String jwt = null;
 
@@ -56,18 +62,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 switch (scope) {
                     case email_verification -> {
-                        System.out.println("User email not verified");
+
+                        if (request.getRequestURI().startsWith(emailApiPath)) break;
+                        ErrorResponse errorResponse = new ErrorResponse(AuthError.email_unverified.name());
+
                         response.setStatus(403);
-                        response.getWriter().write("User email not verified");
+                        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
                         return;
                     }
-                    case authenticated -> {
-                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    }
                 }
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
         filterChain.doFilter(request, response);

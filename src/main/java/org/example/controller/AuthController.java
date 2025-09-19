@@ -61,7 +61,7 @@ public class AuthController {
         try {
             String code = codeGenerator.generate();
             emailSender.send(email, "Test", "This is your verify code: " + code);
-            emailVerifyCodeService.createEmailVerifyCode(user.get().getId(), code);
+            emailVerifyCodeService.createEmailVerifyCode(user.get().getUsername(), code);
         } catch (MessagingException e) {
             System.out.println("Error occurred: " + e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -72,16 +72,15 @@ public class AuthController {
     @PostMapping("email/verify")
     public ResponseEntity<String> emailVerify(@RequestBody Map<String, String> map) {
         String code = map.get("code");
-        String userId = map.get("userId");
-        System.out.println("Receive code verify request: " + userId);
+        String username = map.get("username");
+        System.out.println("Receive code verify request: " + username);
 
-        UUID userUUId = UUID.fromString(userId);
-        Optional<EmailVerifyCode> codeRecord = emailVerifyCodeService.getVerifyCode(userUUId, code);
+        Optional<EmailVerifyCode> codeRecord = emailVerifyCodeService.getVerifyCode(username, code);
         if (codeRecord.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        Optional<User> user = userService.getUserByUserId(userUUId);
+        Optional<User> user = userService.getUserByUsername(username);
         if (user.isEmpty()) {
             return ResponseEntity.internalServerError().build();
         }
