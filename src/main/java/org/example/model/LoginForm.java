@@ -2,14 +2,14 @@ package org.example.model;
 
 public class LoginForm {
 
-    private String username;
+    private String email;
     private String password;
 
     public LoginForm() {
     }
 
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {

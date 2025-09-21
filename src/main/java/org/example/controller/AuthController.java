@@ -1,6 +1,9 @@
 package org.example.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
+import org.example.enums.AuthError;
 import org.example.enums.JwtScope;
 import org.example.model.*;
 import org.example.service.EmailVerifyCodeService;
@@ -95,12 +98,13 @@ public class AuthController {
     }
 
     @PostMapping("sign-up")
-    public ResponseEntity<String> signUp(@RequestBody SignUpForm form) {
+    public ResponseEntity<String> signUp(@RequestBody SignUpForm form) throws JsonProcessingException {
         System.out.println("Receive sign up request");
         // TODO: Check if this user already exist.
-        Optional<User> existingUser = userService.getUserByUsername(form.getUsername());
+        Optional<User> existingUser = userService.getUserByUsername(form.getEmail());
         if (existingUser.isPresent()) {
-            return ResponseEntity.status(702).body("User already sign up, redirect to login");
+            ErrorResponse errorResponse = new ErrorResponse(AuthError.email_used.name());
+            return ResponseEntity.status(409).body(errorResponse.toJson());
         }
 
         // TODO: Validate user password input
@@ -110,18 +114,19 @@ public class AuthController {
         boolean valid = password.length() >= 8 && password.matches(".*[A-Z].*");
 
         if (!valid) {
-            return ResponseEntity.badRequest().body("Invalid password");
+            ErrorResponse errorResponse = new ErrorResponse(AuthError.password_invalid.name());
+            return ResponseEntity.status(409).body(errorResponse.toJson());
         }
 
         String hashedPassword = passwordEncoder.encode(password);
-        User user = new User(form.getUsername(), hashedPassword);
+        User user = new User(form.getEmail(), hashedPassword);
         userService.createUser(user);
 
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(form.getUsername(), form.getPassword())
+                    new UsernamePasswordAuthenticationToken(form.getEmail(), form.getPassword())
             );
-            UserDetails userDetails = userDetailsService.loadUserByUsername(form.getUsername());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(form.getEmail());
             System.out.println("Sign up successfully");
             return ResponseEntity.ok().body(jwtUtil.generateToken(userDetails, JwtScope.email_verification));
         } catch (BadCredentialsException e) {
@@ -133,16 +138,16 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody LoginForm form) {
         System.out.println("Receive login request");
 
-        Optional<User> user = userService.getUserByUsername(form.getUsername());
+        Optional<User> user = userService.getUserByUsername(form.getEmail());
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body("User not found");
         }
 
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(form.getUsername(), form.getPassword())
+                    new UsernamePasswordAuthenticationToken(form.getEmail(), form.getPassword())
             );
-            UserDetails userDetails = userDetailsService.loadUserByUsername(form.getUsername());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(form.getEmail());
             JwtScope scope = user.get().isEmailVerified() ? JwtScope.authenticated : JwtScope.email_verification;
 
             return ResponseEntity.ok().body(jwtUtil.generateToken(userDetails, scope));

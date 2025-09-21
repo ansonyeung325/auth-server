@@ -33,6 +33,6 @@ public class EmailVerifyCodeService {
 
     public Optional<EmailVerifyCode> getVerifyCode(String username, String code) {
         LocalDateTime now = LocalDateTime.now();
-        return emailVerifyCodeRepository.findByUsernameAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(username, code, now);
+        return emailVerifyCodeRepository.findByEmailAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(username, code, now);
     }
 }

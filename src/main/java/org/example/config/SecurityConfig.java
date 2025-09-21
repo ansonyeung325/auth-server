@@ -1,6 +1,5 @@
 package org.example.config;
 
-import org.example.filter.EmailVerificationFilter;
 import org.example.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

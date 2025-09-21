@@ -8,5 +8,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EmailVerifyCodeRepository extends JpaRepository<EmailVerifyCode, UUID> {
-    Optional<EmailVerifyCode> findByUsernameAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(String username, String code, LocalDateTime now);
+    Optional<EmailVerifyCode> findByEmailAndCodeAndExpiredAtGreaterThanAndVerifiedIsFalse(String email, String code, LocalDateTime now);
 }

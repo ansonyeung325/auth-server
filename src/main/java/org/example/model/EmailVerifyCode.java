@@ -10,21 +10,21 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(name = "username_code", columnNames = {"username", "code"}))
+@Table(uniqueConstraints = @UniqueConstraint(name = "email_code", columnNames = {"email", "code"}))
 public class EmailVerifyCode {
     @Id
     @UuidGenerator
     private UUID id;
     private String code;
-    private String username;
+    private String email;
     private LocalDateTime expiredAt;
     private boolean verified = false;
 
     public EmailVerifyCode() {
     }
 
-    public EmailVerifyCode(String username, String code, LocalDateTime expiredAt) {
-        this.username = username;
+    public EmailVerifyCode(String email, String code, LocalDateTime expiredAt) {
+        this.email = email;
         this.code = code;
         this.expiredAt = expiredAt;
     }
@@ -45,12 +45,12 @@ public class EmailVerifyCode {
         this.code = code;
     }
 
-    public String getUserId() {
-        return username;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserId(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public boolean isVerified() {
